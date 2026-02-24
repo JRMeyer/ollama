@@ -25,6 +25,8 @@ type Request struct {
 	Responses chan Response
 	Pipeline  func(Request) error
 
+	ctx context.Context
+
 	sample.Sampler
 	caches []cache.Cache
 }
@@ -157,7 +159,7 @@ func (r *Runner) Run(host, port string, mux http.Handler) error {
 				return nil
 			case request := <-r.Requests:
 				if err := request.Pipeline(request); err != nil {
-					break
+					slog.Info("Request terminated", "error", err)
 				}
 
 				close(request.Responses)
